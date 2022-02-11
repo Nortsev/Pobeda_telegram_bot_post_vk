@@ -1,7 +1,9 @@
 from aiogram.utils import executor
-from create_bot import dp
-from create_date_base import SQLApi
-import init_bot
+from bot.create_bot import dp
+from post.create_date_base import SQLApi
+from bot import init_bot
+
+
 # Сюда надо передать подключение к баще данных
 async def on_startup(_):
     print("Бот запущен")
