@@ -2,20 +2,21 @@ from aiogram import types, Dispatcher
 from bot.create_bot import dp, bot
 import logging
 
+
 # Инициализация лога
 logging.basicConfig(level=logging.INFO)
 info = []
 store_engels = {
-    'kosmonavtov': 'Космонавтов',
-    'gorkogo': 'Горького',
-    '4kvartal': '4 Квартал',
+    'kosmonavtov': '🏪Космонавтов',
+    'gorkogo': '🏪Горького',
+    '4kvartal': '🏪4 Квартал',
 }
 
 store_saratov = {
-    'Sovet': 'Советская',
-    '50_let': '50 лет октября',
-    'Chernishevskogo': 'Чернышевского',
-    'Sokolova': 'Соколовая',
+    'Sovet': '🏪Советская',
+    '50_let': '🏪50 лет октября',
+    'Chernishevskogo': '🏪Чернышевского',
+    'Sokolova': '🏪Соколовая',
 }
 
 cites_name = {
@@ -23,11 +24,14 @@ cites_name = {
     'Саратов': store_saratov
 }
 categories = {
-    'phone': 'Телефоны',
-    'avto': 'Авто',
-    'instrument': 'Инструмент',
-    'computer': 'Компьютерная техника',
+    'phone': '📱Телефоны',
+    'avto': '🚘Авто',
+    'instrument': '🛠Инструмент',
+    'computer': '💻Компьютерная техника',
 }
+
+def  create_reply_keyboard():
+    return types.ReplyKeyboardMarkup(resize_keyboard=True)
 
 def categories_keyboard(keyboard):
     for callback, store_info in categories.items():
@@ -56,23 +60,23 @@ async def send_welcome(message: types.message):
     :return:
     """
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    buttons = ['/Начать']
+    buttons = ['👋Начать']
     keyboard.add(*buttons)
-    print("/Начать")
+    print("Начать")
     await message.answer("Добро пожаловать в бот постинга вк", reply_markup=keyboard)
     await message.delete()
 
 
-@dp.message_handler(commands=['Начать'])
+@dp.message_handler(text=['👋Начать'])
 async def post_vk(message: types.message):
     """
     Функция отображения кнопок с названием городов и кнопка завершить
     :param message: обект types.message библиотеки aiogram
     :return: при нажатии возвращает название города или завершает работу
     """
-    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    buttons = [f'/{city}' for city in cites_name]
-    exit_button = ['/Завершить']
+    keyboard = create_reply_keyboard()
+    buttons = [f'{city}' for city in cites_name]
+    exit_button = ['🔴Завершить']
     keyboard.add(*buttons)
     keyboard.add(*exit_button)
     print("Выберите город")
@@ -80,7 +84,7 @@ async def post_vk(message: types.message):
     await message.delete()
 
 
-@dp.message_handler(commands=cites_name)
+@dp.message_handler(text=cites_name)
 async def cmd_sity(message: types.Message):
     """
     Функция принимает название города и возврашает кнопки с названиями филиалов
@@ -88,7 +92,7 @@ async def cmd_sity(message: types.Message):
     :return: Добавляет в список  info название выбранного города
     """
     info.clear()
-    city = message.text.replace('/', '')
+    city = message.text
     keyboard = create_inline_keyboard()
     for callback, store_info in cites_name[city].items():
         add_inline_button(keyboard, store_info, callback)
@@ -110,7 +114,7 @@ async def smd_engels_filial_categories(call: types.CallbackQuery):
     print(f"Выбран филиал {store_engels[call.data]}")
     keyboard = create_inline_keyboard()
     categories_keyboard(keyboard)
-    info.append(store_engels[call.data])
+    info.append(store_engels[call.data][1:])
     await call.message.answer(f"Выберите категрию филиала  {store_engels[call.data]}", reply_markup=keyboard)
 
 
@@ -124,7 +128,7 @@ async def smd_saratov_filial_categories(call: types.CallbackQuery):
     print(f"Выбран филиал {store_saratov[call.data]}")
     keyboard = create_inline_keyboard()
     categories_keyboard(keyboard)
-    info.append(store_saratov[call.data])
+    info.append(store_saratov[call.data][1:])
     await call.message.answer(f"Выбран филиал {store_saratov[call.data]}", reply_markup=keyboard)
 
 @dp.callback_query_handler(text=categories.keys())
@@ -136,17 +140,17 @@ async def smd_fihish_info(call: types.CallbackQuery):
     """
 
     print(f"Выбранна категория {categories[call.data]}")
-    info.append(categories[call.data])
+    info.append(categories[call.data][1:])
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    buttons_send = ['/Отправить']
-    buttons_end = ['/Завершить']
+    buttons_send = ['✉️Отправить']
+    buttons_end = ['🔴Завершить']
     keyboard.add(*buttons_send)
     keyboard.add(*buttons_end)
     await call.message.answer(f"Выбранна категория {categories[call.data]}")
     await call.message.answer(f"Для оправки на сервер готовы данные Город '{info[0]}'\n Филиал '{info[1]}'\n Категория '{info[2]}'\n",
                               reply_markup=keyboard)
 
-@dp.message_handler(commands="Завершить")
+@dp.message_handler(text="🔴Завершить")
 async def cmd_end(message: types.Message):
     """
     Фукция завершает общение с пользователем
@@ -157,7 +161,7 @@ async def cmd_end(message: types.Message):
     await bot.send_photo(chat_id=message.chat.id, photo=open('img/bye.jpeg', 'rb'))
     await message.answer("/start")
 
-@dp.message_handler(commands="Отправить")
+@dp.message_handler(text="✉️Отправить")
 async def cmd_send(message: types.Message):
     """
     проверят длину списка info на на личие всех 3 обьектов и опраляет данные
@@ -165,13 +169,16 @@ async def cmd_send(message: types.Message):
     :param message:
     :return:
     """
+    text = f"Ваши данные будут оправленны на сервер"
+    keyboard = create_reply_keyboard()
+    exit_button = ['🔴Завершить']
+    keyboard.add(*exit_button)
     if len(info) == 3:
         await bot.delete_message(message.chat.id, message.message_id - 1)
-        await message.answer(f"Ваши данные будут оправленны на сервер")
+        await message.answer(text=text, reply_markup=keyboard)
     else:
-        await message.answer(f"Данных не достаточно попробуте заново")
+        await message.answer(f"Данных не достаточно попробуте заново", reply_markup=keyboard)
         await message.answer("/start")
-
 
 @dp.message_handler()
 async def send_message(message: types.message):
