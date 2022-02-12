@@ -6,7 +6,12 @@ from bot import init_bot
 
 # Сюда надо передать подключение к баще данных
 async def on_startup(_):
-    print("Бот запущен")
+    """
+    Функуия вызываемая при запуске бота
+    :param _:
+    :return: создает подключение к баззе данных
+    """
+    print("Добро пожаловать в бот постинга вк")
     create_date_base = SQLApi()
     create_date_base.create_connection()
 
