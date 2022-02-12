@@ -68,7 +68,7 @@ async def post_vk(message: types.message):
     """
     Функция отображения кнопок с названием городов и кнопка завершить
     :param message: обект types.message библиотеки aiogram
-    :return: при нажатии возвращает назвнание города или завершает работу
+    :return: при нажатии возвращает название города или завершает работу
     """
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
     buttons = [f'/{city}' for city in cites_name]
@@ -85,7 +85,7 @@ async def cmd_sity(message: types.Message):
     """
     Функция принимает название города и возврашает кнопки с названиями филиалов
     :param message: обект types.message библиотеки aiogram
-    :return: Добавляет в список  info название выбраного города
+    :return: Добавляет в список  info название выбранного города
     """
     info.clear()
     city = message.text.replace('/', '')
@@ -105,7 +105,7 @@ async def smd_engels_filial_categories(call: types.CallbackQuery):
     """
     Функция запускается при выборе горада энгельса и возврашает кнопки с названиями категорий
     :param call: Объект обратного вызова библиотеки aiogram
-    :return: Добавляет в список  info название выбраного филиала
+    :return: Добавляет в список  info название выбранного филиала
     """
     print(f"Выбран филиал {store_engels[call.data]}")
     keyboard = create_inline_keyboard()
@@ -117,9 +117,9 @@ async def smd_engels_filial_categories(call: types.CallbackQuery):
 @dp.callback_query_handler(text=store_saratov.keys())
 async def smd_saratov_filial_categories(call: types.CallbackQuery):
     """
-    Функция запускается при выборе горада Саратова и возврашает кнопки с названиями категорий
+    Функция запускается при выборе города Саратова и возврашает кнопки с названиями категорий
     :param call: Объект обратного вызова библиотеки aiogram
-    :return: Добавляет в список info название выбраного филиала
+    :return: Добавляет в список info название выбранного филиала
     """
     print(f"Выбран филиал {store_saratov[call.data]}")
     keyboard = create_inline_keyboard()
@@ -159,7 +159,7 @@ async def cmd_end(message: types.Message):
 async def cmd_send(message: types.Message):
     """
     проверят длину списка info на на личие всех 3 обьектов и опраляет данные
-    выводит ошибку при не достаточной длинне
+    выводит ошибку при не достаточности данных в списке info
     :param message:
     :return:
     """
