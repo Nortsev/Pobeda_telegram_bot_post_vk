@@ -138,8 +138,10 @@ async def smd_fihish_info(call: types.CallbackQuery):
     print(f"Выбранна категория {categories[call.data]}")
     info.append(categories[call.data])
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    buttons = ['/Отправить']
-    keyboard.add(*buttons)
+    buttons_send = ['/Отправить']
+    buttons_end = ['/Завершить']
+    keyboard.add(*buttons_send)
+    keyboard.add(*buttons_end)
     await call.message.answer(f"Выбранна категория {categories[call.data]}")
     await call.message.answer(f"Для оправки на сервер готовы данные Город '{info[0]}'\n Филиал '{info[1]}'\n Категория '{info[2]}'\n",
                               reply_markup=keyboard)
