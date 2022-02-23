@@ -1,22 +1,23 @@
 from aiogram import types, Dispatcher
 from bot.create_bot import dp, bot
 import logging
-
+from post.run_post import post_products
 
 # Инициализация лога
 logging.basicConfig(level=logging.INFO)
 info = []
 store_engels = {
     'kosmonavtov': '🏪Космонавтов',
-    'gorkogo': '🏪Горького',
-    '4kvartal': '🏪4 Квартал',
+    'gorkogo': '🏪Максима Горького 33',
+    '4kvartal': '🏪4 Квартал 9а',
 }
 
 store_saratov = {
-    'Sovet': '🏪Советская',
-    '50_let': '🏪50 лет октября',
-    'Chernishevskogo': '🏪Чернышевского',
-    'Sokolova': '🏪Соколовая',
+    'Sovet': '🏪Советская 64/70',
+    '50_let': '🏪50 лет октября 89',
+    'Chernishevskogo': '🏪Чернышевского 217',
+    'Sokolova': '🏪Соколовая 309/9',
+    'Emelytina': '🏪Емлютина 51',
 }
 
 cites_name = {
@@ -29,6 +30,8 @@ categories = {
     'instrument': '🛠Инструмент',
     'computer': '💻Компьютерная техника',
 }
+
+
 
 def  create_reply_keyboard():
     return types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -145,12 +148,12 @@ async def smd_fihish_info(call: types.CallbackQuery):
     else:
         info.insert(2, categories[call.data][1:])
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    buttons_send = ['✉️Отправить']
+    buttons_send = ['📜Сформировать пост']
     buttons_end = ['🔴Завершить']
     keyboard.add(*buttons_send)
     keyboard.add(*buttons_end)
     await call.message.answer(f"Выбранна категория {categories[call.data]}")
-    await call.message.answer(f"Для оправки на сервер готовы данные Город '{info[0]}'\n Филиал '{info[1]}'\n Категория '{info[2]}'\n",
+    await call.message.answer(f"Для оправки на сервер готовы данные Город: {info[0]}\n Филиал: {info[1]}\n Категория: {info[2]}\n",
                               reply_markup=keyboard)
 
 @dp.message_handler(text="🔴Завершить")
@@ -160,28 +163,60 @@ async def cmd_end(message: types.Message):
     :param message: обект types.message библиотеки aiogram
     :return: Прощальное сообщение и картинку
     """
+    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    buttons = ['👋Начать']
+    keyboard.add(*buttons)
     await bot.delete_message(message.chat.id, message.message_id - 1)
     await bot.send_photo(chat_id=message.chat.id, photo=open('img/bye.jpeg', 'rb'))
-    await message.answer("/start")
+    await message.answer("/start", reply_markup=keyboard)
 
-@dp.message_handler(text="✉️Отправить")
+
+@dp.message_handler(text="📜Сформировать пост")
 async def cmd_send(message: types.Message):
+    """
+    проверят длину списка info на на личие всех 3 обьектов и опраляет данные
+    выводит ошибку при не достаточности данных в списке info
+
+    :param message:
+    :return:
+    """
+    keyboard = create_reply_keyboard()
+    exit_button = ['🔴Завершить']
+    keyboard.add(*exit_button)
+    await message.answer(f"⏳Ожидайте сбор информации с сайта⏳", reply_markup=keyboard)
+    if len(info) == 3:
+        products = post_products(info[0], info[1], info[2])
+        for product in products:
+            try:
+                await bot.send_photo(chat_id=message.chat.id, photo=product['photo'], caption=f"Продукт {product['title']}"                                                                                         f"по цене {product['price']}")
+            except:
+                await message.answer(f"Продукт{product['title']} по цене {product['price']}")
+        post_button = ['📩Опубликовать']
+        keyboard.clean()
+        keyboard.add(*post_button)
+        await message.answer(f"Для публикации поста нажмите кнопку опубликовать", reply_markup=keyboard)
+    else:
+        await message.answer(f"Данных не достаточно попробуте заново", reply_markup=keyboard)
+        await message.answer("/start")
+    print("Пост сформирован")
+
+@dp.message_handler(text="📩Опубликовать")
+async def cmd_post(message: types.Message):
     """
     проверят длину списка info на на личие всех 3 обьектов и опраляет данные
     выводит ошибку при не достаточности данных в списке info
     :param message:
     :return:
     """
-    text = f"Ваши данные будут оправленны на сервер"
     keyboard = create_reply_keyboard()
     exit_button = ['🔴Завершить']
     keyboard.add(*exit_button)
-    if len(info) == 3:
-        await bot.delete_message(message.chat.id, message.message_id - 1)
-        await message.answer(text=text, reply_markup=keyboard)
-    else:
-        await message.answer(f"Данных не достаточно попробуте заново", reply_markup=keyboard)
-        await message.answer("/start")
+    print("Данные оправленны в вк группу")
+    await message.answer("Данные оправленны в вк группу",reply_markup=keyboard)
+    await message.answer("/start")
+
+
+
 
 @dp.message_handler()
 async def send_message(message: types.message):

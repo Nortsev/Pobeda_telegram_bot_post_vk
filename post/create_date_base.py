@@ -15,11 +15,14 @@ class SQLApi:
                               url_photo TEXT NOT NULL,
                               photo BLOB NOT NULL);
                 """
-    CREATE_TABLE_FILIAL = """ CREATE TABLE IF NOT EXISTS FIlIAL(
+    CREATE_TABLE_FILIAL = """ CREATE TABLE IF NOT EXISTS filial(
                               id INTEGER PRIMARY KEY AUTOINCREMENT,
                               retrieved_time DATE DEFAULT (datetime('now','localtime')),
                               sity TEXT NOT NULL,
-                              filial TEXT NOT NULL);
+                              filial TEXT NOT NULL,
+                              categories TEXT NOT NULL,
+                              url TEXT NOT NULL
+                              );
                 """
     INSERT_ITEMS_SQL = """INSERT INTO top_items(title,price,url,url_photo,photo)
                           VALUES(?, ?, ?, ?, ?)
@@ -33,6 +36,7 @@ class SQLApi:
                     """
     DATABASE = 'post_vk.db'
     IMAGE_DIR = 'img'
+    GET_URLS = "SELECT url FROM filial f WHERE sity = ? AND  filial = ? AND categories = ?"
 
     def __init__(self):
         self.conn = self.create_connection()
@@ -48,6 +52,11 @@ class SQLApi:
         except Exception as e:
             print(f'ERROR: {e}')
         return conn
+
+    def get_url(self, sity, filials, categoriess):
+        conn = self.conn.cursor()
+        urls = conn.execute(self.GET_URLS, (sity, filials, categoriess)).fetchone()
+        return urls[0]
 
     def insert_products(self, products: list) -> bool:
         """Insert a list of products to database"""
