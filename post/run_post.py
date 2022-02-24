@@ -3,16 +3,14 @@ from bs4 import BeautifulSoup
 from post.create_date_base import SQLApi
 import configparser
 import re
-
+from post.vk_api_pobeda import VKApi
+config = configparser.ConfigParser()
+config.read("config.ini")
 HEADERS = {'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 '
                          '(KHTML, like Gecko) Chrome/89.0.4389.114 Safari/537.36'}
 
 TOP_ITEMS = 5
 DOMAIN = "https://xn--c1aesfx9dc.xn---63-5cdesg4ei.xn--p1ai/"
-config = configparser.ConfigParser()
-config.read("config.ini")
-login = config["VK"]["login"]
-token = config["VK"]["token_vk"]
 filter_apple = config["Filter"]["filter_apple"]
 
 
@@ -49,8 +47,19 @@ def get_content(html):
         print(f'Продукт {title} добавлен')
     return products
 
+
 def post_products(sity, filials, categoriess):
     sql = SQLApi()
     url = sql.get_url(sity, filials, categoriess)
     html = get_html(url)
     return get_content(html)
+
+
+def publish_post(products):
+    vk_api = VKApi()
+    photos = [product['photo'] for product in products]
+    captions = [
+        f"{product['title']} \n  Цена: {product['price']} руб\n Ссылка на товар на нашем сайте: {product['url']}"
+        for product in products]
+    album_id = vk_api.get_album_id()
+    vk_api.post_group_wall(photos, captions, album_id=album_id)
