@@ -1,4 +1,6 @@
 import requests
+import os
+import shutil
 from bs4 import BeautifulSoup
 from post.create_date_base import SQLApi
 import configparser
@@ -12,18 +14,34 @@ HEADERS = {'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleW
 TOP_ITEMS = 5
 DOMAIN = "https://xn--c1aesfx9dc.xn---63-5cdesg4ei.xn--p1ai/"
 filter_apple = config["Filter"]["filter_apple"]
-
-
+IMAGE_DIR = './img'
 def get_html(url: str, params=None):
     return requests.get(url, headers=HEADERS, params=params)
+
+def write_image(file_name, img) -> bool:
+    """Save image to jpg file"""
+    try:
+        with open(file_name, "wb") as f:
+            f.write(img)
+    except IOError as error:
+        print(error)
+        return False
+    return True
 
 
 def get_content(html):
     soup = BeautifulSoup(html.text, 'html.parser')
     items = soup.find_all("div", attrs={"card"})
     products = []
+
+    if os.path.exists(IMAGE_DIR):
+        shutil.rmtree(IMAGE_DIR)
+    os.mkdir(IMAGE_DIR)
+    image_name = 1
+
+
     for item in items:
-        if len(products) >= TOP_ITEMS:
+        if len(products) == TOP_ITEMS:
             break
         url = item.find("a", attrs={"class": "card-images-wrapper"})['href']
         try:
@@ -38,12 +56,20 @@ def get_content(html):
             continue
         price = item.find("div", attrs={"itemprop": "price"})['content']
         photo = requests.get(url_photo).content
+        image_path = f'{IMAGE_DIR}/{image_name}.jpg'
+        write_image(image_path, photo)
+        error = str(photo)
+        if re.search('<!DOCTYPE html>', error, re.IGNORECASE):
+            continue
         products.append({"title": title,
                          "price": price,
                          "url": url,
                          "url_photo": url_photo,
-                         "photo": photo
+                         "photo": photo,
+                         'image': image_path,
                          })
+
+        image_name += 1
         print(f'Продукт {title} добавлен')
     return products
 
@@ -55,11 +81,11 @@ def post_products(sity, filials, categoriess):
     return get_content(html)
 
 
-def publish_post(products):
+def publish_post(products,filial,sity):
     vk_api = VKApi()
-    photos = [product['photo'] for product in products]
+    photos = [product['image'] for product in products]
     captions = [
         f"{product['title']} \n  Цена: {product['price']} руб\n Ссылка на товар на нашем сайте: {product['url']}"
         for product in products]
     album_id = vk_api.get_album_id()
-    vk_api.post_group_wall(photos, captions, album_id=album_id)
+    vk_api.post_group_wall(photos, captions,filial,sity, album_id=album_id)
