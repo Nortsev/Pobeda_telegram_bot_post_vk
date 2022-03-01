@@ -67,7 +67,7 @@ class VKApi:
     def post_group_wall(self, photos_path: list, captions: list, filial: str, sity: str, album_id: str):
         vk_photos_id = [self.upload_photo(photo_path, caption, album_id)
                         for photo_path, caption in zip(photos_path, captions)]
-        text_message = text(filial,sity)
+        text_message = text(filial, sity)
         vk_post = self.post_wall(self.owner_id, text_message, vk_photos_id)
         return vk_post
 

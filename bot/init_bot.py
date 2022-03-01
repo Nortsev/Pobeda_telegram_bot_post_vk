@@ -3,11 +3,12 @@ from bot.create_bot import dp, bot
 import logging
 from post.run_post import post_products, publish_post
 from aiogram.dispatcher import FSMContext
+
 # Инициализация лога
 logging.basicConfig(level=logging.INFO)
 info = []
 store_engels = {
-    'kosmonavtov': '🏪Космонавтов',
+    'kosmonavtov': '🏪ул.Космонавтов 19',
     'gorkogo': '🏪Максима Горького 33',
     '4kvartal': '🏪4 Квартал 9а',
 }
@@ -18,6 +19,7 @@ store_saratov = {
     'Chernishevskogo': '🏪Чернышевского 217',
     'Sokolova': '🏪Соколовая 309/9',
     'Emelytina': '🏪Емлютина 51',
+    '2_sadovaya': '🏪2-я Садовая 28/34'
 }
 
 cites_name = {
@@ -29,6 +31,8 @@ categories = {
     'avto': '🚘Авто',
     'instrument': '🛠Инструмент',
     'computer': '💻Компьютерная техника',
+    'tovar_dla_doma': '🛀Товары для дома',
+    'tv_and_video': '📺ТВ и видео'
 }
 
 
@@ -68,7 +72,7 @@ async def send_welcome(message: types.message):
     keyboard.add(*buttons)
     print("Начать")
     await message.answer("Добро пожаловать в бот постинга вк", reply_markup=keyboard)
-    await message.delete()
+    # await message.delete()
 
 
 @dp.message_handler(text=['👋Начать'])
@@ -85,7 +89,7 @@ async def post_vk(message: types.message):
     keyboard.add(*exit_button)
     print("Выберите город")
     await message.answer("Выберите город", reply_markup=keyboard)
-    await message.delete()
+    # await message.delete()
 
 
 @dp.message_handler(text=cites_name)
@@ -103,7 +107,7 @@ async def cmd_sity(message: types.Message):
     info.append(city)
     print(f"Выбран {city}")
     await message.answer("Выберите филиал", reply_markup=keyboard)
-    await message.delete()
+    # await message.delete()
 
 
 @dp.callback_query_handler(text=store_engels.keys())
@@ -169,7 +173,6 @@ async def cmd_end(message: types.Message):
     buttons = ['👋Начать']
     keyboard.add(*buttons)
     await bot.delete_message(message.chat.id, message.message_id - 1)
-    # await bot.send_photo(chat_id=message.chat.id, photo=open('img/bye.jpeg', 'rb'))
     await message.answer("/start", reply_markup=keyboard)
 
 
@@ -182,12 +185,13 @@ async def cmd_send(message: types.Message, state: FSMContext):
     :param message:
     :return:
     """
+    chat_id = message.chat.id
     keyboard = create_reply_keyboard()
     exit_button = ['🔴Завершить']
     keyboard.add(*exit_button)
     await message.answer(f"⏳Ожидайте сбор информации с сайта", reply_markup=keyboard)
     if len(info) == 3:
-        products = post_products(info[0], info[1], info[2])
+        products = post_products(info[0], info[1], info[2], chat_id)
         if len(products) > 3:
             async with state.proxy() as product_save:
                 product_save['product'] = products
@@ -229,7 +233,8 @@ async def cmd_post(message: types.Message, state: FSMContext):
         products = product_save['product']
         filial = product_save['filial']
         sity = product_save['sity']
-    publish_post(products, filial, sity)
+    chat_id = message.chat.id
+    publish_post(products, filial, sity, chat_id)
     print("Данные оправленны в вк группу")
     await message.answer("👍Все прошло успешно!Данные оправленны в группу вконтакте")
     await message.answer("/start")

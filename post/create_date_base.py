@@ -6,15 +6,15 @@ import os
 
 class SQLApi:
     """"SQLite3 class"""
-    CREATE_SQL = """ CREATE TABLE IF NOT EXISTS top_items(
-                              id INTEGER PRIMARY KEY AUTOINCREMENT,
-                              retrieved_time DATE DEFAULT (datetime('now','localtime')),
-                              title TEXT NOT NULL,
-                              price TEXT NOT NULL,
-                              url TEXT NOT NULL,
-                              url_photo TEXT NOT NULL,
-                              photo BLOB NOT NULL);
-                """
+    # CREATE_SQL = """ CREATE TABLE IF NOT EXISTS top_items(
+    #                           id INTEGER PRIMARY KEY AUTOINCREMENT,
+    #                           retrieved_time DATE DEFAULT (datetime('now','localtime')),
+    #                           title TEXT NOT NULL,
+    #                           price TEXT NOT NULL,
+    #                           url TEXT NOT NULL,
+    #                           url_photo TEXT NOT NULL,
+    #                           photo BLOB NOT NULL);
+    #             """
     CREATE_TABLE_FILIAL = """ CREATE TABLE IF NOT EXISTS filial(
                               id INTEGER PRIMARY KEY AUTOINCREMENT,
                               retrieved_time DATE DEFAULT (datetime('now','localtime')),
@@ -47,7 +47,7 @@ class SQLApi:
         try:
             conn = sqlite3.connect(self.DATABASE)
             cur = conn.cursor()
-            cur.execute(self.CREATE_SQL)
+            # cur.execute(self.CREATE_SQL)
             cur.execute(self.CREATE_TABLE_FILIAL)
         except Exception as e:
             print(f'ERROR: {e}')
