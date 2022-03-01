@@ -12,11 +12,11 @@ owner_id = config["VK"]["owner_id"]
 album_name = config["VK_POST"]["album_name"]
 
 
-def text(filial, city, phone_number):
+def text_messages(filial, city, phone_number):
     text_message = f"""Дорогие жители и гости нашего города, мы будем рады вас видеть на нашем филиале ПОБЕДЫ по адресу:
                     Город: {city}
                     Филиал: 🏪 {filial}
-                    Звоните по интересующим вопросам по тел. {phone_number}, а лучше всего приходите, будем рады Вас видеть! 😉 
+                    ☎Звоните по интересующим вопросам по тел. {phone_number}, а лучше всего приходите, будем рады Вас видеть! 😉 
                     👉Производим самую высокую ОЦЕНКУ 🔥🔥
                     👉Онлайн ОЦЕНКУ через наш сайт 🔥🔥
                     👉 Самые приятные ЦЕНЫ на товар 🔥🔥
@@ -68,7 +68,7 @@ class VKApi:
     def post_group_wall(self, photos_path: list, captions: list, filial: str, sity: str,phone_number : str, album_id: str):
         vk_photos_id = [self.upload_photo(photo_path, caption, album_id)
                         for photo_path, caption in zip(photos_path, captions)]
-        text_message = text(filial, sity, phone_number)
+        text_message = text_messages(filial, sity, phone_number)
         vk_post = self.post_wall(self.owner_id, text_message, vk_photos_id)
         return vk_post
 

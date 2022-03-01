@@ -172,7 +172,7 @@ async def cmd_end(message: types.Message):
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
     buttons = ['👋Начать']
     keyboard.add(*buttons)
-    await bot.delete_message(message.chat.id, message.message_id - 1)
+    # await bot.delete_message(message.chat.id, message.message_id - 1)
     await message.answer("/start", reply_markup=keyboard)
 
 
