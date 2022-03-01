@@ -191,7 +191,7 @@ async def cmd_send(message: types.Message, state: FSMContext):
     keyboard.add(*exit_button)
     await message.answer(f"⏳Ожидайте сбор информации с сайта", reply_markup=keyboard)
     if len(info) == 3:
-        products = post_products(info[0], info[1], info[2], chat_id)
+        products = post_products(info[1], info[2], chat_id)
         if len(products) > 3:
             async with state.proxy() as product_save:
                 product_save['product'] = products

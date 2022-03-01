@@ -76,21 +76,23 @@ def get_content(html, chat_id):
     return products
 
 
-def post_products(sity, filials, categoriess, chat_id):
+def post_products(filials, categoriess, chat_id):
     sql = SQLApi()
-    url = sql.get_url(sity, filials, categoriess)
+    url = sql.get_url(filials, categoriess)
     html = get_html(url)
     return get_content(html, chat_id)
 
 
 def publish_post(products, filial, sity, chat_id):
     vk_api = VKApi()
+    sql = SQLApi()
+    phone_number = sql.get_phone(filial)
     photos = [product['image'] for product in products]
     captions = [
         f"{product['title']} \n  Цена: {product['price']} руб\n Ссылка на товар на нашем сайте: {product['url']}"
         for product in products]
     album_id = vk_api.get_album_id()
-    vk_api.post_group_wall(photos, captions, filial, sity, album_id=album_id)
+    vk_api.post_group_wall(photos, captions, filial, sity,phone_number, album_id=album_id)
     delete_img_dir = f'./{chat_id}'
     try:
         if os.path.exists(delete_img_dir):
