@@ -1,7 +1,7 @@
 from aiogram.utils import executor
 from bot.create_bot import dp
 from post.create_date_base import SQLApi
-from bot import init_bot
+from bot import init_error_bot
 
 
 # Сюда надо передать подключение к баще данных
@@ -13,7 +13,7 @@ async def on_startup(_):
     """
     print("Добро пожаловать в бот постинга вк")
 
-init_bot.register_hendler(dp)
+init_error_bot.register_hendler(dp)
 
 
 # Запускаем бота с параметром skip_updates=True что бы не

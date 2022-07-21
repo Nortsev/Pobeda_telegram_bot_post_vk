@@ -3,6 +3,7 @@ from bot.create_bot import dp, bot
 import logging
 from post.run_post import post_products, publish_post
 from aiogram.dispatcher import FSMContext
+from post.create_date_base import SQLApi
 
 # Инициализация лога
 logging.basicConfig(level=logging.INFO)
@@ -82,6 +83,10 @@ async def post_vk(message: types.message):
     :param message: обект types.message библиотеки aiogram
     :return: при нажатии возвращает название города или завершает работу
     """
+    # user_name = message.from_user.username
+    # sql = SQLApi()
+    # authorization= sql.authorization_user(username=user_name)
+    # if authorization == True:
     keyboard = create_reply_keyboard()
     buttons = [f'{city}' for city in cites_name]
     exit_button = ['🔴Завершить']
@@ -89,7 +94,12 @@ async def post_vk(message: types.message):
     keyboard.add(*exit_button)
     print("Выберите город")
     await message.answer("Выберите город", reply_markup=keyboard)
-    # await message.delete()
+    # # await message.delete()
+    # else:
+    #     keyboard = create_reply_keyboard()
+    #     exit_button = ['🔴Завершить']
+    #     keyboard.add(*exit_button)
+    #     await message.answer("‼‼‼ВЫ НЕ АВТОРИЗОВАННЫ ОБРАТИТЕСЬ К АДМИНИСТРАТОРУ @nortsev ‼‼‼", reply_markup=keyboard)
 
 
 @dp.message_handler(text=cites_name)
@@ -185,36 +195,42 @@ async def cmd_send(message: types.Message, state: FSMContext):
     :param message:
     :return:
     """
-    chat_id = message.chat.id
-    keyboard = create_reply_keyboard()
-    exit_button = ['🔴Завершить']
-    keyboard.add(*exit_button)
-    await message.answer(f"⏳Ожидайте сбор информации с сайта", reply_markup=keyboard)
-    if len(info) == 3:
-        products = post_products(info[1], info[2], chat_id)
-        if len(products) > 3:
-            async with state.proxy() as product_save:
-                product_save['product'] = products
-                product_save['filial'] = info[1]
-                product_save['sity'] = info[0]
-            for product in products:
-                try:
-                    await bot.send_photo(chat_id=message.chat.id, photo=product['photo'],
-                                         caption=f"Продукт {product['title']}"                                                                                         f"по цене {product['price']}")
-                except:
-                    await message.answer(f"Продукт{product['title']} по цене {product['price']}")
-            post_button = ['📩Опубликовать']
-            keyboard.clean()
-            keyboard.add(*post_button)
-            await message.answer(f"Для публикации поста нажмите кнопку опубликовать", reply_markup=keyboard)
+    try:
+        chat_id = message.chat.id
+        keyboard = create_reply_keyboard()
+        exit_button = ['🔴Завершить']
+        keyboard.add(*exit_button)
+        await message.answer(f"⏳Ожидайте сбор информации с сайта", reply_markup=keyboard)
+        if len(info) == 3:
+            products = post_products(info[1], info[2], chat_id)
+            if len(products) > 3:
+                async with state.proxy() as product_save:
+                    product_save['product'] = products
+                    product_save['filial'] = info[1]
+                    product_save['sity'] = info[0]
+                for product in products:
+                    try:
+                        await bot.send_photo(chat_id=message.chat.id, photo=product['photo'],
+                                             caption=f"Продукт {product['title']}"                                                                                         f"по цене {product['price']}")
+                    except:
+                        await message.answer(f"Продукт{product['title']} по цене {product['price']}")
+                post_button = ['📩Опубликовать']
+                keyboard.clean()
+                keyboard.add(*post_button)
+                await message.answer(f"Для публикации поста нажмите кнопку опубликовать", reply_markup=keyboard)
+            else:
+                await message.answer(f"Данных в данной категрии не достаточно попробуте выбрать другую категорию",
+                                     reply_markup=keyboard)
+                await message.answer("/start")
         else:
-            await message.answer(f"Данных в данной категрии не достаточно попробуте выбрать другую категорию",
-                                 reply_markup=keyboard)
+            await message.answer(f"Данных не достаточно попробуте заново", reply_markup=keyboard)
             await message.answer("/start")
-    else:
-        await message.answer(f"Данных не достаточно попробуте заново", reply_markup=keyboard)
-        await message.answer("/start")
-        print("Пост сформирован")
+            print("Пост сформирован")
+    except ConnectionError:
+        await message.answer(f"🔴Неожиданная ошибка в запросе к сайту", reply_markup=keyboard)
+    except Exception:
+        await message.answer(f"🔴Неожиданное исключение", reply_markup=keyboard)
+
 
 
 @dp.message_handler(text="📩Опубликовать")
@@ -234,10 +250,13 @@ async def cmd_post(message: types.Message, state: FSMContext):
         filial = product_save['filial']
         sity = product_save['sity']
     chat_id = message.chat.id
-    publish_post(products, filial, sity, chat_id)
-    print("Данные оправленны в вк группу")
-    await message.answer("👍Все прошло успешно!Данные оправленны в группу вконтакте")
-    await message.answer("/start")
+    if publish_post(products, filial, sity, chat_id):
+        print("Данные оправленны в вк группу")
+        await message.answer("👍Все прошло успешно!Данные оправленны в группу вконтакте")
+        await message.answer("/start")
+    else:
+        await message.answer("🔴Произошла ошибка опубликования поста Администратор уже работает над исправлением‼")
+        await message.answer("/start")
 
 
 @dp.message_handler()

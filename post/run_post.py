@@ -48,7 +48,7 @@ def get_content(html, chat_id):
         url = item.find("a", attrs={"class": "card-images-wrapper"})['href']
         try:
             url_photo = DOMAIN + \
-                        BeautifulSoup(get_html(url).text, "html.parser").find("img")["data-src-original"]
+                        BeautifulSoup(get_html(url).text, "html.parser").find_all('img')[0]['data-src-original']
         except TypeError:
             continue
         title = item.find("meta", attrs={"itemprop": "name"})['content']
@@ -78,24 +78,29 @@ def get_content(html, chat_id):
 
 def post_products(filials, categoriess, chat_id):
     sql = SQLApi()
-    url = sql.get_url(filials, categoriess)
+    url = sql.get_url(filials, categoriess)[:-1]
     html = get_html(url)
     return get_content(html, chat_id)
 
 
 def publish_post(products, filial, sity, chat_id):
-    vk_api = VKApi()
-    sql = SQLApi()
-    phone_number = sql.get_phone(filial)
-    photos = [product['image'] for product in products]
-    captions = [
-        f"{product['title']} \n  Цена: {product['price']} руб\n Ссылка на товар на нашем сайте: {product['url']}"
-        for product in products]
-    album_id = vk_api.get_album_id()
-    vk_api.post_group_wall(photos, captions, filial, sity,phone_number, album_id=album_id)
-    delete_img_dir = f'./{chat_id}'
     try:
-        if os.path.exists(delete_img_dir):
-            shutil.rmtree(delete_img_dir)
-    except OSError as e:
-        print("Error: %s : %s" % (delete_img_dir, e.strerror))
+        vk_api = VKApi()
+        sql = SQLApi()
+        phone_number = sql.get_phone(filial)
+        photos = [product['image'] for product in products]
+        captions = [
+            f"{product['title']} \n  Цена: {product['price']} руб\n Ссылка на товар на нашем сайте: {product['url']}"
+            for product in products]
+        album_id = vk_api.get_album_id()
+        vk_api.post_group_wall(photos, captions, filial, sity,phone_number, album_id=album_id)
+        delete_img_dir = f'./{chat_id}'
+        try:
+            if os.path.exists(delete_img_dir):
+                shutil.rmtree(delete_img_dir)
+        except OSError as e:
+            print("Error: %s : %s" % (delete_img_dir, e.strerror))
+            return False
+        return True
+    except Exception:
+        return False

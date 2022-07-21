@@ -80,7 +80,11 @@ class SQLApi:
         urls = conn.execute(self.GET_PHONE, [filials]).fetchone()
         return urls[0]
 
-
-
-
+    def authorization_user(self, username):
+        conn = self.conn.cursor()
+        info = conn.execute('SELECT * FROM users WHERE username=?', (username,))
+        if info.fetchone() is None:
+            return False
+        else:
+             return True
 

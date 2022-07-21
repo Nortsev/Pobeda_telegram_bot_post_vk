@@ -56,6 +56,7 @@ class VKApi:
         return f'photo{vk_photo["owner_id"]}_{vk_photo["id"]}'
 
     def post_wall(self, owner_id: int, text_message: str, vk_photos: List[str]):
+        self.vk_session.token = access_token
         vk_photos_id = ",".join(vk_photos)
         vk_post = self.vk_session.method('wall.post', {
             'owner_id': -owner_id,
