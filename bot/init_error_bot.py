@@ -1,10 +1,10 @@
 from aiogram import types, Dispatcher
-from bot.create_bot import dp
-
+from bot.create_bot import dp, bot
 
 
 def create_reply_keyboard():
     return types.ReplyKeyboardMarkup(resize_keyboard=True)
+
 
 def create_inline_keyboard():
     """
@@ -31,9 +31,13 @@ async def send_welcome(message: types.message):
     keyboard = create_reply_keyboard()
     exit_button = ['🔴Завершить']
     keyboard.add(*exit_button)
-    await message.answer("Добро пожаловать в бот постинга вк", reply_markup=keyboard)
-    await message.answer("🔴В связи проблемами на сайте бот временно не работает!🔴", reply_markup=keyboard)
+    await message.answer("🔴В связи финансовыми трудностями при оплате сервера проект ЗАКРЫТ!🔴", reply_markup=keyboard)
+    await message.answer("Денег нет! Но вы держитесь, счастья вам здоровья и хорошего настроения! ",
+                         reply_markup=keyboard)
+    await bot.send_photo(chat_id=message.chat.id, photo= 'https://zavtra.ru/upl/15553/alarge/pic_19737f36b5f.jpg',
+                         caption=f"Денег нет! Но вы держитесь, счастья вам здоровья и хорошего настроения!")
     # await message.delete()
+
 
 @dp.message_handler(text=['👋Начать'])
 async def post_vk(message: types.message):
@@ -45,16 +49,17 @@ async def post_vk(message: types.message):
     keyboard = create_reply_keyboard()
     exit_button = ['🔴Завершить']
     keyboard.add(*exit_button)
-    await message.answer("Добро пожаловать в бот постинга вк", reply_markup=keyboard)
-    await message.answer("🔴В связи проблемами на сайте бот временно не работает!🔴", reply_markup=keyboard)
-
+    await message.answer("🔴В связи финансовыми трудностями при оплате сервера проект ЗАКРЫТ!🔴", reply_markup=keyboard)
+    await bot.send_photo(chat_id=message.chat.id, photo= 'https://zavtra.ru/upl/15553/alarge/pic_19737f36b5f.jpg',
+                         caption=f"Денег нет! Но вы держитесь, счастья вам здоровья и хорошего настроения!")
 
 @dp.message_handler(text="🔴Завершить")
 async def cmd_end(message: types.Message):
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
     buttons = ['👋Начать']
     keyboard.add(*buttons)
-    await message.answer("Введется работа по востановлению работоспособности!", reply_markup=keyboard)
+    await message.answer("🔴Самое главное здоровья,пока!🔴", reply_markup=keyboard)
+
 
 
 

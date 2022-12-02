@@ -195,41 +195,57 @@ async def cmd_send(message: types.Message, state: FSMContext):
     :param message:
     :return:
     """
-    try:
-        chat_id = message.chat.id
-        keyboard = create_reply_keyboard()
-        exit_button = ['🔴Завершить']
-        keyboard.add(*exit_button)
-        await message.answer(f"⏳Ожидайте сбор информации с сайта", reply_markup=keyboard)
-        if len(info) == 3:
-            products = post_products(info[1], info[2], chat_id)
-            if len(products) > 3:
-                async with state.proxy() as product_save:
-                    product_save['product'] = products
-                    product_save['filial'] = info[1]
-                    product_save['sity'] = info[0]
-                for product in products:
-                    try:
-                        await bot.send_photo(chat_id=message.chat.id, photo=product['photo'],
-                                             caption=f"Продукт {product['title']}"                                                                                         f"по цене {product['price']}")
-                    except:
-                        await message.answer(f"Продукт{product['title']} по цене {product['price']}")
-                post_button = ['📩Опубликовать']
-                keyboard.clean()
-                keyboard.add(*post_button)
-                await message.answer(f"Для публикации поста нажмите кнопку опубликовать", reply_markup=keyboard)
+    count = 0
+    chat_id = message.chat.id
+    keyboard = create_reply_keyboard()
+    exit_button = ['🔴Завершить']
+    keyboard.add(*exit_button)
+    await message.answer(f"⏳Ожидайте сбор информации с сайта", reply_markup=keyboard)
+    while count < 5:
+        try:
+            if len(info) == 3:
+                products = post_products(info[1], info[2], chat_id)
+                if len(products) > 3:
+                    async with state.proxy() as product_save:
+                        product_save['product'] = products
+                        product_save['filial'] = info[1]
+                        product_save['sity'] = info[0]
+                    for product in products:
+                        try:
+                            await bot.send_photo(chat_id=message.chat.id, photo=product['photo'],
+                                                 caption=f"Продукт {product['title']}"                                                                                         f"по цене {product['price']}")
+                        except:
+                            await message.answer(f"Продукт{product['title']} по цене {product['price']}")
+                    post_button = ['📩Опубликовать']
+                    keyboard.clean()
+                    keyboard.add(*post_button)
+                    await message.answer(f"Для публикации поста нажмите кнопку опубликовать", reply_markup=keyboard)
+                    break
+                else:
+                    await message.answer(f"Данных в данной категрии не достаточно попробуте выбрать другую категорию",
+                                         reply_markup=keyboard)
+                    await message.answer("/start")
+                    break
             else:
-                await message.answer(f"Данных в данной категрии не достаточно попробуте выбрать другую категорию",
-                                     reply_markup=keyboard)
+                await message.answer(f"Данных не достаточно попробуте заново", reply_markup=keyboard)
                 await message.answer("/start")
-        else:
-            await message.answer(f"Данных не достаточно попробуте заново", reply_markup=keyboard)
-            await message.answer("/start")
-            print("Пост сформирован")
-    except ConnectionError:
-        await message.answer(f"🔴Неожиданная ошибка в запросе к сайту", reply_markup=keyboard)
-    except Exception:
-        await message.answer(f"🔴Неожиданное исключение", reply_markup=keyboard)
+                print("Пост сформирован")
+                break
+        except ConnectionError:
+            if count <= 5:
+                count += 1
+                continue
+            else:
+                await message.answer(f"🔴Неожиданная ошибка в запросе к сайту", reply_markup=keyboard)
+                break
+        except Exception:
+            if count <= 5:
+                count += 1
+                continue
+            else:
+                await message.answer(f"🔴Неожиданное исключение", reply_markup=keyboard)
+                break
+
 
 
 

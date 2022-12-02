@@ -13,7 +13,8 @@ HEADERS = {'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleW
                          '(KHTML, like Gecko) Chrome/89.0.4389.114 Safari/537.36'}
 
 TOP_ITEMS = 5
-DOMAIN = "https://xn--c1aesfx9dc.xn---63-5cdesg4ei.xn--p1ai/"
+# DOMAIN = "https:////xn--c1aesfx9dc.xn---63-5cdesg4ei.xn--p1ai/"
+DOMAIN = "http:////xn--c1aesfx9dc.xn---63-5cdesg4ei.xn--p1ai/"
 filter_apple = config["Filter"]["filter_apple"]
 
 
